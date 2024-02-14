@@ -65,14 +65,15 @@ func GetOperator(phoneNumber string, validate bool) (*ResponseOperator, error) {
 	for _, opr := range constant.Operators {
 		if slices.Contains(opr.Code, code) {
 			if validate {
-				maximum := 0
-				if int(constant.MaximumLength) > opr.ValidationConfig.MaxLength {
-					maximum = int(constant.MaximumLength)
-				} else {
-					maximum = opr.ValidationConfig.MaxLength
+				maximum := int(constant.MaximumLength)
+				minimum := int(constant.MinimumLength)
+				if opr.ValidationConfig != nil {
+					if opr.ValidationConfig.MaxLength > int(constant.MaximumLength) {
+						maximum = opr.ValidationConfig.MaxLength
+					}
 				}
-				if len(newPhoneNumber) < int(constant.MinimumLength) || len(newPhoneNumber) > maximum {
-					return nil, fmt.Errorf("phone number length must be between 10 and 12")
+				if len(newPhoneNumber) < minimum || len(newPhoneNumber) > maximum {
+					return nil, fmt.Errorf("phone number %s length must be between %s and %s", newPhoneNumber, strconv.Itoa(minimum), strconv.Itoa(maximum))
 				}
 			}
 
