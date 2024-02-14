@@ -18,7 +18,7 @@ type ResponseOperator struct {
 	IsValid  bool   `json:"is_valid,omitempty" binding:"required"`
 }
 
-func GetOperator(phoneNumber string, validate ...bool) (*ResponseOperator, error) {
+func GetOperator(phoneNumber string, validate bool) (*ResponseOperator, error) {
 	var newPhoneNumber string = phoneNumber
 	var card string
 	var code int
@@ -64,6 +64,18 @@ func GetOperator(phoneNumber string, validate ...bool) (*ResponseOperator, error
 
 	for _, opr := range constant.Operators {
 		if slices.Contains(opr.Code, code) {
+			if validate {
+				maximum := 0
+				if int(constant.MaximumLength) > opr.ValidationConfig.MaxLength {
+					maximum = int(constant.MaximumLength)
+				} else {
+					maximum = opr.ValidationConfig.MaxLength
+				}
+				if len(newPhoneNumber) < int(constant.MinimumLength) || len(newPhoneNumber) > maximum {
+					return nil, fmt.Errorf("phone number length must be between 10 and 12")
+				}
+			}
+
 			operator = opr.Operator
 			card = opr.Name
 			message = string(constant.VALID)
